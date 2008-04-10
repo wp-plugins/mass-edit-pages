@@ -1,14 +1,16 @@
 <?php
 /*
-Plugin Name: Mass Edit Pages
+Plugin Name: Mass Edit Pages for WordPress 2.1
 Plugin URI: http://www.almosteffortless.com/wordpress/
-Description: This plugin allows you to edit various things about "Pages" in bulk (Manage => Mass Edit Pages).
+Description: This plugin allows you to edit various things about "Pages" in bulk (Manage => Mass Edit Pages). <a href="http://www.gunnart.de">Gunnar Tillmann</a> changed this PlugIn for WordPress 2.1
 Author: Trevor Turk
-Version: 1.0
+Version: 1.02 (I18n)
 Author URI: http://www.almosteffortless.com/
 */ 
 
 /*  Copyright 2006  Trevor Turk  (email : trevorturk@yahoo.com)
+	Changes for WordPress 2.1 by Gunnar Tillmann (email : info@gunnart.de) 
+	Localization by Jan Weiß (email: jan@geheimwerk.de)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,14 +26,26 @@ Author URI: http://www.almosteffortless.com/
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+/*
+Ideas:
+- Inform the user of menu_order collisions
+	- Offer automated fixing
+- Interactive UI for dragging rows and thus changing menu_order
+- Integration with jx_navbar (currently in private beta)
+	- Checkboxes for hiding pages from navigation bar
+*/
+
+// prep localization support
+load_plugin_textdomain('wp-mepages', $path = 'wp-content/plugins/wp-mepages'); 
 	
 	function mep_add_pages() {
-		add_management_page('Mass Edit Pages', 'Mass Edit Pages', 8, __FILE__, 'mep_manage_page');
+		add_management_page(__('Mass Edit Pages', 'wp-mepages'), __('Mass Edit Pages', 'wp-mepages'), 8, __FILE__, 'mep_manage_page');
 	}
 			
 	function mep_manage_page() {
 		// check that user is allowed to be here
-		if ( !current_user_can('edit_pages') ) { echo "Permission Denied"; exit(); }
+		if ( !current_user_can('edit_pages') ) { _e('This user cannot edit pages.'); exit(); }
 		// start to do wp database updates if changes have been made
 		if ( (isset($_POST[ID][0])) ) { 
 			// update wp database
@@ -43,21 +57,23 @@ Author URI: http://www.almosteffortless.com/
 					$post_parent = $_POST[post_parent][$i];
 					$menu_order = $_POST[menu_order][$i];
 					$wpdb->query("UPDATE $wpdb->posts SET post_parent='$post_parent', menu_order='$menu_order' WHERE ID=$ID");
+					clean_page_cache($ID); // else you won't see any effect, if caching is active!
+					wp_update_post($_POST); // else you'll get 404-errors after changing the post_parents!
 				$i++;
 			endwhile;
 			// show options update message
-			echo '<div class="updated"><p>Changes Saved.</p></div>'; 
+			echo '<div class="updated"><p>'.__('Options saved.').'</p></div>'; 
 		}
 		?>
 
 		<div class="wrap">
-		<h2><?php _e('Mass Edit Pages'); ?></h2>
+		<h2><?php _e('Mass Edit Pages', 'wp-mepages'); ?></h2>
 		<form name="mass_page_order" action="" method="post">
 		<table id="the-list-x" width="100%" cellpadding="3" cellspacing="3"> 
-		<tr><th scope="col">ID</th><th scope="col">Title</th><th scope="col">Page Parent</th><th scope="col">Menu Order</th><th scope="col">View</th><th scope="col">Edit</th></tr>
+		<tr><th scope="col"><?php _e('ID'); ?></th><th scope="col"><?php _e('Title'); ?></th><th scope="col"><?php _e('Page Parent'); ?></th><th scope="col"><?php _e('Page Order'); ?></th><th scope="col"><?php _e('Post Slug'); ?></th><th scope="col"></th><th scope="col"></th></tr>
 		<?php mep_page_rows(); ?>
 		</table>
-		<p class="submit"><input type="submit" name="Submit" value="Save Changes &raquo;" /></p>
+		<p class="submit"><input type="submit" name="Submit" value="<?php _e('Save Changes &raquo;'); ?>" /></p>
 		</form></div>
 		
 	<?php }
@@ -65,22 +81,24 @@ Author URI: http://www.almosteffortless.com/
 	function mep_page_rows($parent = 0, $level = 0, $pages = 0) {
 		global $wpdb, $class, $post, $post_ID;
 		if (!$pages)
-			$pages = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_status = 'static' ORDER BY menu_order");
+			//$pages = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_status = 'static' ORDER BY menu_order");
+			$pages = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type = 'page' ORDER BY menu_order");
 
 		if ($pages) {
 			foreach ($pages as $post) {
-				start_wp();
+				//start_wp(); // seems not to be needed ...
 				if ($post->post_parent == $parent) {
 					$post_ID = $post->ID;
 					$post->post_title = wp_specialchars($post->post_title); $pad = str_repeat('&#8212; ', $level); 
 					$id = $post->ID; $class = ('alternate' == $class) ? '' : 'alternate'; ?>
 			<tr id='page-<?php echo $id; ?>' class='<?php echo $class; ?>'>
-			<th scope="row"><input type="hidden" name="ID[]" value="<?php echo $post->ID; ?>"><?php echo $post->ID; ?></th>
+			<th scope="row"><input type="hidden" name="ID[]" value="<?php echo $post->ID; ?>" /><?php echo $post->ID; ?></th>
 			<td><?php echo $pad; ?><?php the_title(); ?></td>
 			<td align="center"><select name="post_parent[]"><option value='0'><?php _e('Main Page (no parent)'); ?></option><?php parent_dropdown($post->post_parent); ?></select></td>
-			<td align="center"><input type="text" name="menu_order[]" size="4" value="<?php echo $post->menu_order; ?>"></td>
-			<td align="center"><a href="<?php the_permalink(); ?>">View</a></td>
-			<td align="center"><a href="post.php?action=edit&amp;post=<?php echo $post->ID; ?>">Edit</a></td>
+			<td align="center"><input type="text" name="menu_order[]" size="4" value="<?php echo $post->menu_order; ?>" /></td>
+			<td align="center"><input type="text" name="post_name[]" size="13" value="<?php echo $post->post_name; ?>" /></td>
+			<td align="center"><a href="<?php the_permalink(); ?>"><?php _e('View'); ?></a></td>
+			<td align="center"><a href="post.php?action=edit&amp;post=<?php echo $post->ID; ?>"><?php _e('Edit'); ?></a></td>
 			</tr> 
 
 		<?php mep_page_rows($id, $level +1, $pages); } } } else { return false; }
