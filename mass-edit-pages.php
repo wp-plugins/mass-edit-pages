@@ -46,8 +46,8 @@ function mep_manage_page() {
 				$menu_order = $_POST[menu_order][$i];
 				$post_name = $_POST[post_name][$i];
 				$wpdb->query("UPDATE $wpdb->posts SET post_parent='$post_parent', menu_order='$menu_order', post_name='$post_name' WHERE ID=$ID");
-				clean_page_cache($ID);
-				wp_update_post($_POST);
+        // clean_page_cache($ID);
+        // wp_update_post($_POST);
 			$i++;
 		endwhile;
 		echo '<div class="updated"><p>'.__('Options saved.').'</p></div>'; 
