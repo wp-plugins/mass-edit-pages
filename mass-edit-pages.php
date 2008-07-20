@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: Mass Edit Pages for WordPress 2.3
+Plugin Name: Mass Edit Pages for WordPress 2.6
 Plugin URI: http://www.almosteffortless.com/wordpress/
 Description: This plugin allows you to edit various things about "Pages" in bulk (Manage => Mass Edit Pages).
 Author: Trevor Turk
-Version: 1.3
+Version: 2.6
 Author URI: http://www.almosteffortless.com/
 */ 
 
@@ -44,9 +44,10 @@ function mep_manage_page() {
 				$ID = $_POST[ID][$i];
 				$post_parent = $_POST[post_parent][$i];
 				$menu_order = $_POST[menu_order][$i];
-				$wpdb->query("UPDATE $wpdb->posts SET post_parent='$post_parent', menu_order='$menu_order' WHERE ID=$ID");
-				clean_page_cache($ID); // else you won't see any effect, if caching is active!
-				wp_update_post($_POST); // else you'll get 404-errors after changing the post_parents!
+				$post_name = $_POST[post_name][$i];
+				$wpdb->query("UPDATE $wpdb->posts SET post_parent='$post_parent', menu_order='$menu_order', post_name='$post_name' WHERE ID=$ID");
+				clean_page_cache($ID);
+				wp_update_post($_POST);
 			$i++;
 		endwhile;
 		echo '<div class="updated"><p>'.__('Options saved.').'</p></div>'; 
@@ -79,13 +80,12 @@ function mep_page_rows($parent = 0, $level = 0, $pages = 0) {
 		<tr id='page-<?php echo $id; ?>' class='<?php echo $class; ?>'>
 		<th scope="row"><input type="hidden" name="ID[]" value="<?php echo $post->ID; ?>" /><?php echo $post->ID; ?></th>
 		<td><?php echo $pad; ?><?php the_title(); ?></td>
-		<td align="center"><select name="post_parent[]"><option value='0'><?php _e('Main Page (no parent)'); ?></option><?php parent_dropdown($post->post_parent); ?></select></td>
+		<td align="center"><input type="text" name="post_parent[]" size="4" value="<?php echo $post->post_parent; ?>" /></td>
 		<td align="center"><input type="text" name="menu_order[]" size="4" value="<?php echo $post->menu_order; ?>" /></td>
-		<td align="center"><input type="text" name="post_name[]" size="13" value="<?php echo $post->post_name; ?>" /></td>
+		<td align="center"><input type="text" name="post_name[]" size="18" value="<?php echo $post->post_name; ?>" /></td>
 		<td align="center"><a href="<?php the_permalink(); ?>"><?php _e('View'); ?></a></td>
 		<td align="center"><a href="post.php?action=edit&amp;post=<?php echo $post->ID; ?>"><?php _e('Edit'); ?></a></td>
 		</tr> 
-
 	<?php mep_page_rows($id, $level +1, $pages); } } } else { return false; }
 }
 	
