@@ -4,7 +4,7 @@ Plugin Name: Mass Edit Pages for WordPress 2.6
 Plugin URI: http://www.almosteffortless.com/wordpress/
 Description: This plugin allows you to edit various things about "Pages" in bulk (Manage => Mass Edit Pages).
 Author: Trevor Turk
-Version: 2.6
+Version: 2.6.1
 Author URI: http://www.almosteffortless.com/
 */ 
 
@@ -80,7 +80,7 @@ function mep_page_rows($parent = 0, $level = 0, $pages = 0) {
 		<tr id='page-<?php echo $id; ?>' class='<?php echo $class; ?>'>
 		<th scope="row"><input type="hidden" name="ID[]" value="<?php echo $post->ID; ?>" /><?php echo $post->ID; ?></th>
 		<td><?php echo $pad; ?><?php the_title(); ?></td>
-		<td align="center"><input type="text" name="post_parent[]" size="4" value="<?php echo $post->post_parent; ?>" /></td>
+		<td align="center"><select name="post_parent[]"><option value='0'><?php _e('Main Page (no parent)'); ?></option><?php parent_dropdown($post->post_parent); ?></select></td>
 		<td align="center"><input type="text" name="menu_order[]" size="4" value="<?php echo $post->menu_order; ?>" /></td>
 		<td align="center"><input type="text" name="post_name[]" size="18" value="<?php echo $post->post_name; ?>" /></td>
 		<td align="center"><a href="<?php the_permalink(); ?>"><?php _e('View'); ?></a></td>
