@@ -62,7 +62,7 @@ function mep_manage_page() {
 	<?php mep_page_rows(); ?>
 	</table>
 	<p class="submit"><input type="submit" name="Submit" value="<?php _e('Save Changes &raquo;'); ?>" /></p>
-	<p>Please note: Mass Edit Pages is not fully tested with WordPress versions 2.7 and greater. It may not play well with the newer autosaving and versioning features. Use at your own risk!</p>
+	<p><b>Please note:</b> Mass Edit Pages is not tested with WordPress versions 2.7 and greater. <br />It may not play well with the newer autosaving and versioning features. Use at your own risk!</p>
 	</form></div>
 	
 <?php }
