@@ -4,7 +4,7 @@ Plugin Name: Mass Edit Pages for WordPress 2.6
 Plugin URI: http://www.almosteffortless.com/wordpress/
 Description: This plugin allows you to edit various things about "Pages" in bulk (Manage => Mass Edit Pages).
 Author: Trevor Turk
-Version: 2.6.2
+Version: 2.6.3
 Author URI: http://www.almosteffortless.com/
 */ 
 
@@ -62,6 +62,7 @@ function mep_manage_page() {
 	<?php mep_page_rows(); ?>
 	</table>
 	<p class="submit"><input type="submit" name="Submit" value="<?php _e('Save Changes &raquo;'); ?>" /></p>
+	<p>Please note: Mass Edit Pages is not fully tested with WordPress versions 2.7 and greater. It may not play well with the newer autosaving and versioning features. Use at your own risk!</p>
 	</form></div>
 	
 <?php }
